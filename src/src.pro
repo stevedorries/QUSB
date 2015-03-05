@@ -50,14 +50,14 @@ SOURCES += \
     eventhandler.cpp
 
 HEADERS += \
-    global.h \
     device.h \
-    clibusb \
     handle.h \
     io.h \
     bulkio.h \
     io_p.h \
-    eventhandler.h
+    eventhandler.h \
+    global.h \
+    clibusb.h
 
 PUBLIC_HEADERS = \
     global.h \
@@ -68,10 +68,16 @@ PUBLIC_HEADERS = \
 
 QMAKE_MOC = $$QMAKE_MOC -nw     # Make MOC shut up about non-QObject classes
 
-# TODO: Make this distributable
-!isEmpty(!$(QUSB_LIBUSB_PREFIX)) {
-    INCLUDEPATH += $(QUSB_LIBUSB_PREFIX)/include
-    LIBS += -L$(QUSB_LIBUSB_PREFIX)/lib
+## TODO: Make this distributable
+#!isEmpty(!$(QUSB_LIBUSB_PREFIX)) {
+#    INCLUDEPATH += $(QUSB_LIBUSB_PREFIX)/include
+#    LIBS += -L$(QUSB_LIBUSB_PREFIX)/lib
+#}
+
+win32 {
+INCLUDEPATH += $$PWD/..
+LIBS += -L$$PWD/../libusb-1.0
+
 }
 LIBS += -lusb-1.0
 
@@ -85,7 +91,7 @@ isEmpty(QUSB_INSTALL_PREFIX) {  # If the user had set this, honor that
         QUSB_INSTALL_PREFIX = /usr/local/qusb
     }
     win32 {
-        QWT_INSTALL_PREFIX = C:/qusb
+        QWT_INSTALL_PREFIX = $$PWD/../lib
     }
 }
 

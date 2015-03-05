@@ -20,7 +20,7 @@
 ******************************************************************************/
 
 #include <QtCore/QThread>
-#include "clibusb"
+#include "clibusb.h"
 #include "eventhandler.h"
 
 namespace QUSB

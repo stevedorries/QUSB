@@ -19,7 +19,7 @@
 **
 ******************************************************************************/
 
-#include "clibusb"
+#include "clibusb.h"
 #include "device.h"
 #include "handle.h"
 
@@ -192,7 +192,7 @@ QString Handle::stringDescriptor(quint32 index) const
                 bufferSize);
     if (r < 0)  // TODO: Need to do something with the error code.
         qWarning("Error getting description");
-    return QString::fromAscii(buffer, bufferSize);
+    return QString::fromLatin1(buffer, bufferSize);
 }
 
 }   // namespace QUSB

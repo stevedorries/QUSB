@@ -22,6 +22,7 @@
 #ifndef QUSB_IO_P_H
 #define QUSB_IO_P_H
 
+#include "clibusb.h"
 #include <QtCore/QtGlobal>
 struct libusb_transfer;
 class QThread;
@@ -49,7 +50,7 @@ public:
 
     bool submit(libusb_transfer *transfer);
 
-    static void transferCallback(libusb_transfer *transfer);
+     static  void LIBUSB_CALL  transferCallback(libusb_transfer *transfer);
 
     Handle *handle;
     int endpoint;

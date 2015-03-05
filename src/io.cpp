@@ -20,7 +20,7 @@
 ******************************************************************************/
 
 #include <QtCore/QThread>
-#include "clibusb"
+#include "clibusb.h"
 #include "io.h"
 #include "io_p.h"
 

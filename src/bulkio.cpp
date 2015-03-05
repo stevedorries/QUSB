@@ -19,7 +19,7 @@
 **
 ******************************************************************************/
 
-#include "clibusb"
+#include "clibusb.h"
 #include "bulkio.h"
 #include "handle.h"
 #include "io_p.h"

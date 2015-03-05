@@ -22,7 +22,7 @@
 #ifndef QUSB_HANDLE_H
 #define QUSB_HANDLE_H
 
-#include <QtCore/QObject>
+#include <QObject>
 #include "global.h"
 struct libusb_device_handle;
 

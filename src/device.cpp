@@ -22,7 +22,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QMutex>
 #include <QtCore/QThread>
-#include "clibusb"
+#include "clibusb.h"
 #include "device.h"
 #include "eventhandler.h"
 #include "handle.h"
