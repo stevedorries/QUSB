@@ -32,15 +32,15 @@ class BulkIOPrivate : public IOPrivate
     Q_DECLARE_PUBLIC(BulkIO)
 
 public:
-    BulkIOPrivate(IO *q, Handle *handle, int endpoint) :
-        IOPrivate(q, handle, endpoint) {}
+    BulkIOPrivate(IO *q, DeviceHandle *handle, int endpoint) :
+        IOPrivate(q, handle) {}
 
     virtual void fill(libusb_transfer *tran, int flag, uchar *buf, int len)
     {
         libusb_fill_bulk_transfer(
             tran,
             this->handle->rawhandle(),
-            flag | this->endpoint,
+            flag ,
             buf,
             len,
             IOPrivate::transferCallback,
@@ -55,7 +55,7 @@ BulkIO::BulkIO(BulkIOPrivate *d, QObject *parent) :
 {
 }
 
-BulkIO::BulkIO(Handle *handle, int endpoint, QObject *parent) :
+BulkIO::BulkIO(DeviceHandle *handle, int endpoint, QObject *parent) :
     IO(new BulkIOPrivate(this, handle, endpoint), parent)
 {
 }

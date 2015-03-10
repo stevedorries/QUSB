@@ -22,16 +22,16 @@
 #ifndef QUSB_IO_H
 #define QUSB_IO_H
 
-#include <QtCore/QIODevice>
+#include <QIODevice>
 #include "global.h"
 
 namespace QUSB
 {
 
-class Handle;
+class DeviceHandle;
 class IOPrivate;
 
-class QUSB_SHARED_EXPORT IO : public QObject
+class QUSB_SHARED_EXPORT IO : public QIODevice
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(IO)
@@ -41,14 +41,20 @@ protected:
     IO(IOPrivate *d, QObject *parent = 0);
 
 public:
-    explicit IO(Handle *handle, int endpoint, QObject *parent = 0);
+    explicit IO(DeviceHandle *handle, QObject *parent = 0);
     virtual ~IO();
 
     virtual bool open(QIODevice::OpenMode openMode);
     virtual void close();
 
-signals:
-    void bytesReceived(QByteArray bytes);
+    // QIODevice interface
+protected:
+    qint64 readData(char *data, qint64 maxlen);
+    qint64 writeData(const char *data, qint64 len);
+    bool isSequential() const;
+    qint64 bytesToWrite() const;
+    qint64 bytesAvailable() const;
+
 };
 
 }   // namespace QUSB

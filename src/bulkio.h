@@ -38,7 +38,7 @@ protected:
     BulkIO(BulkIOPrivate *d, QObject *parent = 0);
 
 public:
-    BulkIO(Handle *handle, int endpoint, QObject *parent = 0);
+    BulkIO(DeviceHandle *handle, int endpoint, QObject *parent = 0);
 };
 
 }   // namespace QUSB

@@ -108,6 +108,7 @@ Device::~Device()
     delete d_ptr;
 }
 
+
 quint8 Device::bus() const
 {
     return libusb_get_bus_number(d_ptr->rawdevice);
@@ -216,10 +217,48 @@ qint16 Device::deviceSubClass() const
     return desc.bDeviceSubClass;
 }
 
+void Device::DeviceDescription()
+{
+    Q_D(Device);
+    libusb_device_descriptor desc;
+    int r = libusb_get_device_descriptor(d->rawdevice, &desc);
+    if (r)
+        return ;
+    qDebug("dev config num %d",desc.bNumConfigurations);
+    struct libusb_config_descriptor *config;
+    r = libusb_get_active_config_descriptor(d->rawdevice,&config);
+    if(r){
+        return ;
+    }
+    qDebug("dev config interface number %d",config->bNumInterfaces);
+    for(int i = 0;i<config->bNumInterfaces;i++){
+        const struct libusb_interface * inter = &config->interface[i];
+        qDebug("number of alternate settings : %d",inter->num_altsetting);
+        for(int j = 0;j<inter->num_altsetting;j++){
+            const struct libusb_interface_descriptor * interdesc = &inter->altsetting[j];
+            qDebug("interface number %d;endpoint number %d;interface class %d",
+                   interdesc->bInterfaceNumber,interdesc->bNumEndpoints,interdesc->bInterfaceClass);
+            for(int k=0;k<interdesc->bNumEndpoints;k++){
+                const struct libusb_endpoint_descriptor * epdesc = &interdesc->endpoint[k];
+                qDebug("descriptor type :%d;ep addr %d;attributes %d;max packet size %d",
+                       epdesc->bDescriptorType,epdesc->bEndpointAddress,
+                       epdesc->bmAttributes,epdesc->wMaxPacketSize);
+            }
+        }
+    }
+    libusb_free_config_descriptor(config);
+}
+
 Device &Device::operator=(const Device &d)
 {
     this->d_ptr->rawdevice = d.d_ptr->rawdevice;
     return *this;
+}
+
+bool &Device::operator ==(const Device &d)
+{
+    return     this->rawdevice() == d.rawdevice();
+
 }
 
 QList<Device> Device::availableDevices()

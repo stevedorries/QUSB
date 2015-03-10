@@ -31,7 +31,7 @@ struct libusb_device;
 namespace QUSB
 {
 
-class Handle;
+class DeviceHandle;
 class DevicePrivate;
 
 void setDebugLevel(int level);
@@ -39,12 +39,6 @@ void setDebugLevel(int level);
 class QUSB_SHARED_EXPORT Device : public QObject
 {
     Q_DECLARE_PRIVATE(Device)
-    DevicePrivate *d_ptr;
-
-    explicit Device(libusb_device *rawdevice);
-
-    libusb_device *rawdevice() const;
-    static libusb_context *rawcontext();
 
 public:
 
@@ -59,11 +53,16 @@ public:
         SpeedSuper
     };
 
-    friend class Handle;
+    friend class DeviceHandle;
     friend void setDebugLevel(int level);
 
     Device(const Device &d);
+    explicit Device(libusb_device *rawdevice);
+
     ~Device();
+
+    libusb_device *rawdevice() const;
+    static libusb_context *rawcontext();
 
     quint8 bus() const;
     quint8 address() const;
@@ -78,9 +77,15 @@ public:
     qint16 deviceClass() const;
     qint16 deviceSubClass() const;
 
+    void DeviceDescription();
     Device &operator=(const Device &d);
+    bool &operator ==(const Device &d);
 
     static QList<Device> availableDevices();
+
+private:
+    DevicePrivate *d_ptr;
+
 };
 
 }   // namespace QUSB

@@ -24,6 +24,9 @@
 
 #include "clibusb.h"
 #include <QtCore/QtGlobal>
+#include <QEventLoop>
+#include <QBuffer>
+#include <QMutex>
 struct libusb_transfer;
 class QThread;
 
@@ -32,6 +35,7 @@ namespace QUSB
 
 class Channel;
 class IO;
+class DeviceHandle;
 
 class IOPrivate
 {
@@ -41,24 +45,44 @@ protected:
     IO *q_ptr;
 
 public:
-    IOPrivate(IO *q, Handle *handle, int endpoint);
+    IOPrivate(IO *q, DeviceHandle *handle);
     virtual ~IOPrivate();
 
+    virtual qint64 read(char *data,qint64 maxlen);
+    virtual qint64 write(const char * data,qint64 len);
+    virtual bool startRead();
+    virtual bool stopRead();
+    virtual bool startWrite();
+    virtual bool stopWrite();
+    virtual void onTransferEvent(libusb_transfer *transfer);
     // Things to override.
     virtual libusb_transfer *alloc();
     virtual void fill(libusb_transfer *tran, int flag, uchar *buf, int len);
 
     bool submit(libusb_transfer *transfer);
 
-     static  void LIBUSB_CALL  transferCallback(libusb_transfer *transfer);
+    static void LIBUSB_CALL transferCallback(libusb_transfer *transfer);
 
-    Handle *handle;
-    int endpoint;
+
+    DeviceHandle *handle;
     libusb_transfer *readTransfer;
+    libusb_transfer *writeTransfer;
+    int endpointIn;
+    int endpointOut;
+    int maxSendingPacketSize;
+    int maxReceivingPacketSize;
+
     QByteArray readBuffer;
-    QThread *readThread;
-    Channel *readChannel;
+    QBuffer readBytes;
+    QMutex readMutex;
+
+    QBuffer writeBytes;
+    QByteArray currentWrite;
+    QMutex writeMutex;
+
+
 };
+
 
 }   // namespace QUSB
 

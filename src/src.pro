@@ -78,6 +78,10 @@ win32 {
 INCLUDEPATH += $$PWD/..
 LIBS += -L$$PWD/../libusb-1.0
 
+}else{
+
+CONFIG += staticlib
+
 }
 LIBS += -lusb-1.0
 
@@ -85,18 +89,18 @@ LIBS += -lusb-1.0
 #
 # Deploy
 #
-isEmpty(QUSB_INSTALL_PREFIX) {  # If the user had set this, honor that
-    QUSB_INSTALL_PREFIX = $$[QT_INSTALL_PREFIX]
-    unix {
-        QUSB_INSTALL_PREFIX = /usr/local/qusb
-    }
-    win32 {
-        QWT_INSTALL_PREFIX = $$PWD/../lib
-    }
-}
+#isEmpty(QUSB_INSTALL_PREFIX) {  # If the user had set this, honor that
+#    QUSB_INSTALL_PREFIX = $$[QT_INSTALL_PREFIX]
+#    unix {
+#        QUSB_INSTALL_PREFIX = /usr/local/qusb
+#    }
+#    win32 {
+#        QWT_INSTALL_PREFIX = $$PWD/../lib
+#    }
+#}
 
-headers.files = $${PUBLIC_HEADERS}
-headers.path = $${QUSB_INSTALL_PREFIX}/include/qusb
-target.path = $${QUSB_INSTALL_PREFIX}/lib
+#headers.files = $${PUBLIC_HEADERS}
+#headers.path = $${QUSB_INSTALL_PREFIX}/include/qusb
+#target.path = $${QUSB_INSTALL_PREFIX}/lib
 
-INSTALLS += headers target
+#INSTALLS += headers target

@@ -21,6 +21,8 @@
 
 TEMPLATE = subdirs
 
+CONFIG += demo
+
 SUBDIRS = src
 
 

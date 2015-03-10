@@ -30,23 +30,25 @@ namespace QUSB
 {
 
 class Device;
-class HandlePrivate;
+class DeviceHandlePrivate;
 
-class QUSB_SHARED_EXPORT Handle : public QObject
+class QUSB_SHARED_EXPORT DeviceHandle : public QObject
 {
-    Q_DECLARE_PRIVATE(Handle)
-    HandlePrivate *d_ptr;
+    Q_DECLARE_PRIVATE(DeviceHandle)
+    DeviceHandlePrivate *d_ptr;
 
-    Q_DISABLE_COPY(Handle)
-    Handle(
+    Q_DISABLE_COPY(DeviceHandle)
+
+    DeviceHandle(
         const Device &device, libusb_device_handle *rawhandle,
         QObject *parent = 0
     );
-
 public:
-    explicit Handle(const Device &device, QObject *parent = 0);
-    ~Handle();
 
+
+    explicit DeviceHandle(const Device &device, QObject *parent = 0);
+    ~DeviceHandle();
+    Device * getDevice();
     int activeConfiguration() const;
     int setConfiguration(int config) const;
     int claimInterface(int num);
@@ -55,7 +57,7 @@ public:
 
     libusb_device_handle *rawhandle() const;
 
-    static Handle *fromVendorIdProductId(quint16 vid, quint16 pid);
+    static DeviceHandle *fromVendorIdProductId(quint16 vid, quint16 pid);
 
     QString stringDescriptor(quint32 index) const;
 };
