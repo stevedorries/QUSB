@@ -74,6 +74,7 @@ DeviceHandle::DeviceHandle(const Device &device, QObject *parent) :
     Q_D(DeviceHandle);
     int r = libusb_open(device.rawdevice(), &d->rawhandle);
     if (r){
+        delete d_ptr;
         qWarning()<<"Unable to obtain device handle "<<r;
         throw r;
     }
@@ -82,13 +83,13 @@ DeviceHandle::DeviceHandle(const Device &device, QObject *parent) :
 
 DeviceHandle::~DeviceHandle()
 {
+    qDebug("DeviceHandle::~DeviceHandle");
     delete d_ptr;
 }
 
 Device *DeviceHandle::getDevice()
 {
     Q_D(DeviceHandle);
-
     return &d->device;
 }
 
@@ -143,6 +144,19 @@ int DeviceHandle::setConfiguration(int config) const
     return rc;
 }
 
+bool DeviceHandle::InterfaceClaimed(int num)
+{
+    Q_D(DeviceHandle);
+
+    foreach (int n, d->claimedInterfaces) {
+        if(num == n) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 
 int DeviceHandle::claimInterface(int num)
 {
@@ -170,9 +184,11 @@ int DeviceHandle::releaseInterface(int num)
     return r;
 }
 
-int DeviceHandle::setInterfaceAlternateSetting(int interfaceNumber, int alternateSetting) const
+int DeviceHandle::setInterfaceAlternateSetting(
+        int interfaceNumber, int alternateSetting) const
 {
-    int rc = libusb_set_interface_alt_setting(d_ptr->rawhandle, interfaceNumber, alternateSetting);
+    int rc = libusb_set_interface_alt_setting(
+                d_ptr->rawhandle, interfaceNumber, alternateSetting);
     switch(rc)
     {
     case 0://success

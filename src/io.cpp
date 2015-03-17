@@ -25,6 +25,7 @@
 #include "clibusb.h"
 #include "io.h"
 #include "io_p.h"
+#include "handle.h"
 
 namespace QUSB
 {
@@ -32,34 +33,46 @@ namespace QUSB
 IO::IO(DeviceHandle *handle,  QObject *parent) :
     QIODevice(parent), d_ptr(new IOPrivate(this, handle))
 {
+    Q_D(IO);
+
 }
 
 IO::IO(IOPrivate *d, QObject *parent) :
     QIODevice(parent), d_ptr(d)
 {
-
 }
 
 IO::~IO()
 {
+    Q_D(IO);
     if(isOpen()){
-        close();
+        this->close();
     }
     delete d_ptr;
+}
+
+DeviceHandle *IO::getDeviceHandle()
+{
+    Q_D(IO);
+
+    return d->handle;
 }
 
 bool IO::open(QIODevice::OpenMode openMode)
 {
     Q_D(IO);
-//    Q_UNUSED(openMode);
+    //    Q_UNUSED(openMode);
+
+    //    if(d->handle->claimInterface(d->interfaceNumber) != 0){
+    //        return false;
+    //    }
 
     // TODO: Implement open mode. This is a read-only implementation.
     d->readTransfer = d->alloc();
     d->fill(d->readTransfer, LIBUSB_ENDPOINT_IN|d->endpointIn,
             reinterpret_cast<uchar *>(d->readBuffer.data()),
             d->readBuffer.length());
-    bool ok = d->submit(d->readTransfer);
-    if (!ok)
+    if (!d->submit(d->readTransfer))
     {
         libusb_free_transfer(d->readTransfer);
         d->readTransfer = 0;
@@ -80,9 +93,8 @@ void IO::close()
         {
             // Nothing to transfer. We can clean up now safely.
             d->stopRead();
-//            libusb_free_transfer(d->readTransfer);
-//            d->readTransfer = 0;
         }else{
+            qDebug("IO::close---cancel tranfer");
             // Needs to cancel the transfer first. Cleanup happens in the
             // callback. (IOPrivate::transferCallback)
             libusb_cancel_transfer(d->readTransfer);
@@ -99,7 +111,7 @@ void IO::close()
         }
 
     }
-
+    QIODevice::close();
 }
 
 qint64 IO::readData(char *data, qint64 maxlen)
@@ -108,13 +120,13 @@ qint64 IO::readData(char *data, qint64 maxlen)
     QMutexLocker mutexLocker(&d->readMutex);
     return d->readBytes.read(data,maxlen);
 
-//    return d->read(data,maxlen);
+    //    return d->read(data,maxlen);
 }
 
 qint64 IO::writeData(const char *data, qint64 len)
 {
     Q_D(IO);
-//    return d->write(data,len);
+    //    return d->write(data,len);
 
     qDebug()<<"IOPrivate::write --- "<<len;
     QMutexLocker mutexLocker(&d->writeMutex);
@@ -138,8 +150,8 @@ qint64 IO::writeData(const char *data, qint64 len)
         d->writeTransfer = d->alloc();
         d->currentWrite = d->writeBytes.read(d->maxSendingPacketSize);
         d->fill(d->writeTransfer,LIBUSB_ENDPOINT_OUT|d->endpointOut,
-                   reinterpret_cast<uchar *>(d->currentWrite.data()),
-                   d->currentWrite.length());
+                reinterpret_cast<uchar *>(d->currentWrite.data()),
+                d->currentWrite.length());
 
         if(!d->submit(d->writeTransfer)){
             d->writeBytes.close();

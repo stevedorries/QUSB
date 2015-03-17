@@ -22,13 +22,14 @@
 #include "io.h"
 #include "io_p.h"
 #include <QDebug>
+#include "handle.h"
 namespace QUSB
 {
 
 IOPrivate::IOPrivate(IO *q, DeviceHandle *handle) :
     q_ptr(q), handle(handle), readTransfer(0),readBuffer(64,0),
     endpointIn(130),endpointOut(1),maxSendingPacketSize(64),
-    writeTransfer(0)
+    writeTransfer(0),interfaceNumber(0)
 {
 
 }
@@ -36,8 +37,9 @@ IOPrivate::IOPrivate(IO *q, DeviceHandle *handle) :
 IOPrivate::~IOPrivate()
 {
 //    if (this->readTransfer && this->readTransfer->buffer)
-//        delete [] this->readTransfer->buffer;
+    //        delete [] this->readTransfer->buffer;
 }
+
 
 qint64 IOPrivate::read(char *data, qint64 maxlen)
 {
@@ -102,8 +104,7 @@ bool IOPrivate::startRead()
 bool IOPrivate::stopRead()
 {
     Q_Q(IO);
-
-//    this->readBytes.close();
+    qDebug("IOPrivate::stopRead---stop read");
     emit q->readChannelFinished();
     libusb_free_transfer(this->readTransfer);
     this->readTransfer = 0 ;
@@ -126,6 +127,7 @@ bool IOPrivate::stopWrite()
 void IOPrivate::onTransferEvent(libusb_transfer *transfer)
 {
     Q_Q(IO);
+    qDebug()<<"IOPrivate::onTransferEvent --- ";
 
     if (transfer == this->readTransfer)
     {
@@ -226,10 +228,11 @@ libusb_transfer *IOPrivate::alloc()
     return libusb_alloc_transfer(0);
 }
 
-
-void IOPrivate::fill(libusb_transfer *, int, uchar *, int)
+void IOPrivate::fill(libusb_transfer *tran, int flag, uchar *buf, int len)
 {
+
 }
+
 
 bool IOPrivate::submit(libusb_transfer *transfer)
 {

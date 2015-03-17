@@ -47,7 +47,6 @@ protected:
 public:
     IOPrivate(IO *q, DeviceHandle *handle);
     virtual ~IOPrivate();
-
     virtual qint64 read(char *data,qint64 maxlen);
     virtual qint64 write(const char * data,qint64 len);
     virtual bool startRead();
@@ -80,6 +79,7 @@ public:
     QByteArray currentWrite;
     QMutex writeMutex;
 
+    int interfaceNumber;
 
 };
 

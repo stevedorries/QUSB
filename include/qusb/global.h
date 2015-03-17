@@ -19,51 +19,15 @@
 **
 ******************************************************************************/
 
-#include "clibusb.h"
-#include "bulkio.h"
-#include "handle.h"
-#include "io_p.h"
+#ifndef QUSB_GLOBAL_H
+#define QUSB_GLOBAL_H
 
-namespace QUSB
-{
+#include <QtCore/qglobal.h>
 
-class BulkIOPrivate : public IOPrivate
-{
-    Q_DECLARE_PUBLIC(BulkIO)
+#if defined(QUSB_LIBRARY)
+#  define QUSB_SHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define QUSB_SHARED_EXPORT Q_DECL_IMPORT
+#endif
 
-public:
-    BulkIOPrivate(IO *q, DeviceHandle *handle) :
-        IOPrivate(q, handle) {
-
-    }
-
-    virtual void fill(libusb_transfer *tran, int flag, uchar *buf, int len)
-    {
-        libusb_fill_bulk_transfer(
-            tran,
-            this->handle->rawhandle(),
-            flag ,
-            buf,
-            len,
-            IOPrivate::transferCallback,
-            this,
-            0
-        );
-    }
-
-};
-
-BulkIO::BulkIO(BulkIOPrivate *d, QObject *parent) :
-    IO(d, parent)
-{
-}
-
-BulkIO::BulkIO(DeviceHandle *handle, QObject *parent) :
-    IO(new BulkIOPrivate(this, handle), parent)
-{
-    Q_D(BulkIO);
-//    d->interfaceNumber = interface_number;
-
-}
-
-}   // namespace QUSB
+#endif // QUSB_GLOBAL_H

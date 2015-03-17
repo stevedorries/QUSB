@@ -34,11 +34,14 @@ class QUSB_SHARED_EXPORT BulkIO : public IO
     Q_OBJECT
     Q_DECLARE_PRIVATE(BulkIO)
 
+
+public:
+    BulkIO(DeviceHandle *handle, QObject *parent = 0);
+
+
 protected:
     BulkIO(BulkIOPrivate *d, QObject *parent = 0);
 
-public:
-    BulkIO(DeviceHandle *handle, int endpoint, QObject *parent = 0);
 };
 
 }   // namespace QUSB

@@ -49,12 +49,15 @@ public:
     explicit DeviceHandle(const Device &device, QObject *parent = 0);
     ~DeviceHandle();
     Device * getDevice();
+
     int activeConfiguration() const;
     int setConfiguration(int config) const;
     int claimInterface(int num);
     int releaseInterface(int num);
     int setInterfaceAlternateSetting(int,int) const;
 
+
+    bool InterfaceClaimed(int num);
     libusb_device_handle *rawhandle() const;
 
     static DeviceHandle *fromVendorIdProductId(quint16 vid, quint16 pid);

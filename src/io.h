@@ -44,16 +44,17 @@ public:
     explicit IO(DeviceHandle *handle, QObject *parent = 0);
     virtual ~IO();
 
+    DeviceHandle * getDeviceHandle();
     virtual bool open(QIODevice::OpenMode openMode);
     virtual void close();
+    bool isSequential() const;
+    qint64 bytesToWrite() const;
+    qint64 bytesAvailable() const;
 
     // QIODevice interface
 protected:
     qint64 readData(char *data, qint64 maxlen);
     qint64 writeData(const char *data, qint64 len);
-    bool isSequential() const;
-    qint64 bytesToWrite() const;
-    qint64 bytesAvailable() const;
 
 };
 

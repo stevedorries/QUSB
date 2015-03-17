@@ -255,9 +255,9 @@ Device &Device::operator=(const Device &d)
     return *this;
 }
 
-bool &Device::operator ==(const Device &d)
+bool Device::operator ==(const Device &d)
 {
-    return     this->rawdevice() == d.rawdevice();
+    return     (this->rawdevice() == d.rawdevice());
 
 }
 

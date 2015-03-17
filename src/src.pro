@@ -28,7 +28,7 @@ TEMPLATE = lib
 # Boilerplate
 #
 BUILD_DIR = ../build/src
-DESTDIR = ../lib
+#DESTDIR = ../lib
 OBJECTS_DIR = $$BUILD_DIR
 MOC_DIR = $$BUILD_DIR
 RCC_DIR = $$BUILD_DIR
@@ -47,7 +47,8 @@ SOURCES += \
     io.cpp \
     bulkio.cpp \
     io_p.cpp \
-    eventhandler.cpp
+    eventhandler.cpp \
+    bulkdevicehandle.cpp
 
 HEADERS += \
     device.h \
@@ -57,14 +58,14 @@ HEADERS += \
     io_p.h \
     eventhandler.h \
     global.h \
-    clibusb.h
+    clibusb.h \
+    bulkdevicehandle.h
 
 PUBLIC_HEADERS = \
     global.h \
     device.h \
-    handle.h \
-    io.h \
-    bulkio.h
+    clibusb.h \
+    bulkdevicehandle.h
 
 QMAKE_MOC = $$QMAKE_MOC -nw     # Make MOC shut up about non-QObject classes
 
@@ -89,18 +90,20 @@ LIBS += -lusb-1.0
 #
 # Deploy
 #
-#isEmpty(QUSB_INSTALL_PREFIX) {  # If the user had set this, honor that
-#    QUSB_INSTALL_PREFIX = $$[QT_INSTALL_PREFIX]
-#    unix {
+isEmpty(QUSB_INSTALL_PREFIX) {  # If the user had set this, honor that
+    QUSB_INSTALL_PREFIX = $$[QT_INSTALL_PREFIX]
+    unix {
 #        QUSB_INSTALL_PREFIX = /usr/local/qusb
-#    }
-#    win32 {
-#        QWT_INSTALL_PREFIX = $$PWD/../lib
-#    }
-#}
+         QUSB_INSTALL_PREFIX = $$PWD/..
 
-#headers.files = $${PUBLIC_HEADERS}
-#headers.path = $${QUSB_INSTALL_PREFIX}/include/qusb
-#target.path = $${QUSB_INSTALL_PREFIX}/lib
+    }
+    win32 {
+        QWT_INSTALL_PREFIX = $$PWD/../lib
+    }
+}
 
-#INSTALLS += headers target
+headers.files = $${PUBLIC_HEADERS}
+headers.path = $${QUSB_INSTALL_PREFIX}/include/qusb
+target.path = $${QUSB_INSTALL_PREFIX}/lib
+
+INSTALLS += headers target
