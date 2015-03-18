@@ -34,7 +34,7 @@ namespace QUSB
 class DeviceHandle;
 class DevicePrivate;
 
-void setDebugLevel(int level);
+QUSB_SHARED_EXPORT void  setDebugLevel(int level);
 
 class QUSB_SHARED_EXPORT Device : public QObject
 {

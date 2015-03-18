@@ -6,3 +6,7 @@ lib/
 bin/
 *.o
 *.autosave
+debug/
+release/
+*.Debug
+*.Release
