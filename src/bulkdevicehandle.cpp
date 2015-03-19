@@ -188,7 +188,8 @@ QString BulkDeviceHandle::stringDescriptor(quint32 index) const
 
 void BulkDeviceHandle::onTransferEvent(libusb_transfer *transfer)
 {
-    qDebug()<<"BulkDeviceHandle::onTransferEvent --- ";
+    qDebug()<<"transfer -- status "<<transfer->status<<" ; endpoint "<<transfer->endpoint<<
+              " ; type : "<<transfer->type<<" ; actual length  : "<<transfer->actual_length;
 
     if (transfer == this->readTransfer)
     {
@@ -316,10 +317,10 @@ bool BulkDeviceHandle::stopRead()
 
 bool BulkDeviceHandle::startWrite()
 {
-    qDebug()<<"BulkDeviceHandle::startWrite---write data";
 
     this->writeTransfer = libusb_alloc_transfer(0);
     this->currentWrite = this->writeBytes.read(this->maxSendingPacketSize);
+    qDebug()<<"write data "<<currentWrite.toHex();
 
     libusb_fill_bulk_transfer(
         this->writeTransfer,
@@ -431,18 +432,18 @@ qint64 BulkDeviceHandle::readData(char *data, qint64 maxlen)
 
 qint64 BulkDeviceHandle::writeData(const char *data, qint64 len)
 {
-    qDebug()<<"IOPrivate::write --- "<<len;
+//    qDebug()<<"IOPrivate::write --- "<<len;
     QMutexLocker mutexLocker(&this->writeMutex);
     if(this->writeBytes.atEnd()){
-        qDebug()<<" IOPrivate::write ---write bytes end";
+//        qDebug()<<" IOPrivate::write ---write bytes end";
         this->writeBytes.close();
     }
     if(!this->writeBytes.isOpen()){
-        qDebug()<<" oepn write buffer";
+//        qDebug()<<" oepn write buffer";
         this->writeBytes.open(QBuffer::ReadWrite|QBuffer::Truncate);
     }
     qint64 readPos = this->writeBytes.pos();
-    qDebug()<<"IOPrivate::write---buffer read pos "<<readPos;
+//    qDebug()<<"IOPrivate::write---buffer read pos "<<readPos;
     this->writeBytes.seek(this->writeBytes.size());
     Q_ASSERT(this->writeBytes.atEnd());
     this->writeBytes.write(data,len);

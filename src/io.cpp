@@ -128,18 +128,18 @@ qint64 IO::writeData(const char *data, qint64 len)
     Q_D(IO);
     //    return d->write(data,len);
 
-    qDebug()<<"IOPrivate::write --- "<<len;
+//    qDebug()<<"IOPrivate::write --- "<<len;
     QMutexLocker mutexLocker(&d->writeMutex);
     if(d->writeBytes.atEnd()){
-        qDebug()<<" IOPrivate::write ---write bytes end";
+//        qDebug()<<" IOPrivate::write ---write bytes end";
         d->writeBytes.close();
     }
     if(!d->writeBytes.isOpen()){
-        qDebug()<<" oepn write buffer";
+//        qDebug()<<" oepn write buffer";
         d->writeBytes.open(QBuffer::ReadWrite|QBuffer::Truncate);
     }
     qint64 readPos = d->writeBytes.pos();
-    qDebug()<<"IOPrivate::write---buffer read pos "<<readPos;
+//    qDebug()<<"IOPrivate::write---buffer read pos "<<readPos;
     d->writeBytes.seek(d->writeBytes.size());
     Q_ASSERT(d->writeBytes.atEnd());
     d->writeBytes.write(data,len);

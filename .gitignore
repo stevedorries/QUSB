@@ -6,3 +6,4 @@ lib/
 bin/
 *.o
 *.autosave
+*.a
