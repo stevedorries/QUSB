@@ -113,7 +113,7 @@ int BulkDeviceHandle::releaseInterface(int num)
 {
     int r = libusb_release_interface(this->rawhandle, num);
     if (r)
-        qWarning("Failed to release interface %d", num);
+        qWarning("Failed to release interface %d,ret %d", num,r);
     else{
         this->claimedInterfaces.removeOne(num);
         libusb_attach_kernel_driver(this->rawhandle,num);
@@ -320,6 +320,10 @@ bool BulkDeviceHandle::startWrite()
 
     this->writeTransfer = libusb_alloc_transfer(0);
     this->currentWrite = this->writeBytes.read(this->maxSendingPacketSize);
+
+    while(this->currentWrite.size() < this->maxSendingPacketSize){
+        this->currentWrite.append((char )0);
+    }
     qDebug()<<"write data "<<currentWrite.toHex();
 
     libusb_fill_bulk_transfer(
@@ -385,6 +389,7 @@ bool BulkDeviceHandle::open(QIODevice::OpenMode mode)
 
 void BulkDeviceHandle::close()
 {
+    qDebug()<<"close device io";
     if(this->readTransfer){
         if (!this->readTransfer->dev_handle)
         {
@@ -432,18 +437,14 @@ qint64 BulkDeviceHandle::readData(char *data, qint64 maxlen)
 
 qint64 BulkDeviceHandle::writeData(const char *data, qint64 len)
 {
-//    qDebug()<<"IOPrivate::write --- "<<len;
     QMutexLocker mutexLocker(&this->writeMutex);
     if(this->writeBytes.atEnd()){
-//        qDebug()<<" IOPrivate::write ---write bytes end";
         this->writeBytes.close();
     }
     if(!this->writeBytes.isOpen()){
-//        qDebug()<<" oepn write buffer";
         this->writeBytes.open(QBuffer::ReadWrite|QBuffer::Truncate);
     }
     qint64 readPos = this->writeBytes.pos();
-//    qDebug()<<"IOPrivate::write---buffer read pos "<<readPos;
     this->writeBytes.seek(this->writeBytes.size());
     Q_ASSERT(this->writeBytes.atEnd());
     this->writeBytes.write(data,len);
