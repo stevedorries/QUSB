@@ -27,7 +27,7 @@ TEMPLATE = lib
 #
 # Boilerplate
 #
-BUILD_DIR = ../build/src
+BUILD_DIR = $$PWD/../build/src
 #DESTDIR = ../lib
 OBJECTS_DIR = $$BUILD_DIR
 MOC_DIR = $$BUILD_DIR
@@ -76,8 +76,8 @@ QMAKE_MOC = $$QMAKE_MOC -nw     # Make MOC shut up about non-QObject classes
 #}
 
 win32 {
-INCLUDEPATH += $$PWD/..
-LIBS += -L$$PWD/../libusb-1.0
+INCLUDEPATH += $$PWD/../include
+LIBS += -L$$PWD/../include/libusb-1.0
 
 }else{
 
@@ -98,12 +98,13 @@ isEmpty(QUSB_INSTALL_PREFIX) {  # If the user had set this, honor that
 
     }
     win32 {
-        QWT_INSTALL_PREFIX = $$PWD/../lib
+        QUSB_INSTALL_PREFIX = $$PWD/..
     }
 }
 
 headers.files = $${PUBLIC_HEADERS}
 headers.path = $${QUSB_INSTALL_PREFIX}/include/qusb
 target.path = $${QUSB_INSTALL_PREFIX}/lib
+
 
 INSTALLS += headers target

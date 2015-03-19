@@ -7,3 +7,7 @@ bin/
 *.o
 *.autosave
 *.a
+debug/
+release/
+*.Debug
+*.Release
