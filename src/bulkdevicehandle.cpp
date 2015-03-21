@@ -311,6 +311,7 @@ bool BulkDeviceHandle::stopRead()
     libusb_free_transfer(this->readTransfer);
     this->readTransfer = 0 ;
     emit this->readChannelFinished();
+    this->readBytes.close();
     return true;
 
 }
@@ -353,6 +354,8 @@ bool BulkDeviceHandle::stopWrite()
     this->writeBytes.close();
     libusb_free_transfer(this->writeTransfer);
     this->writeTransfer = 0;
+    this->writeBytes.close();
+
     return true;
 }
 
@@ -418,13 +421,13 @@ void BulkDeviceHandle::close()
 
 qint64 BulkDeviceHandle::bytesAvailable() const
 {
-    return this->readBytes.bytesAvailable();
+    return QIODevice::bytesAvailable()+this->readBytes.bytesAvailable();
 
 }
 
 qint64 BulkDeviceHandle::bytesToWrite() const
 {
-    return  this->writeBytes.bytesAvailable();
+    return  this->writeBytes.bytesAvailable()+ QIODevice::bytesToWrite();
 
 }
 

@@ -30,4 +30,8 @@
 #  define QUSB_SHARED_EXPORT Q_DECL_IMPORT
 #endif
 
+#ifdef QUSB_SRC
+#define QUSB_SHARED_EXPORT
+#endif
+
 #endif // QUSB_GLOBAL_H

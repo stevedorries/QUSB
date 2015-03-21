@@ -12,3 +12,4 @@ release/
 *.Debug
 *.Release
 *.lib
+*.dll

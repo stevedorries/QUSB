@@ -21,7 +21,20 @@
 
 QT -= gui
 
-TARGET = qusb
+
+
+QUSB_LIBNAME = qusb
+CONFIG(debug, debug|release) {
+        mac:QUSB_LIBNAME = $$member(QUSB_LIBNAME, 0)_debug
+        else:win32:QUSB_LIBNAME = $$member(QUSB_LIBNAME, 0)d
+}
+QUSB_LIBDIR = $$PWD/lib
+
+
+
+TARGET = $$QUSB_LIBNAME
+
+
 TEMPLATE = lib
 
 #
@@ -104,7 +117,6 @@ isEmpty(QUSB_INSTALL_PREFIX) {  # If the user had set this, honor that
 
 headers.files = $${PUBLIC_HEADERS}
 headers.path = $${QUSB_INSTALL_PREFIX}/include/qusb
-#target.path = $${QUSB_INSTALL_PREFIX}/lib  $${QUSB_INSTALL_PREFIX}/../SAMVServer
+target.path = $${QUSB_INSTALL_PREFIX}/lib
 
-target.path = $${QUSB_INSTALL_PREFIX}/../SAMVServer
 INSTALLS += headers target
