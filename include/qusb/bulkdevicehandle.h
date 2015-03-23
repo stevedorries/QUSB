@@ -51,7 +51,7 @@ public:
 signals:
 
 public slots:
-
+    void continueRead();
     // QIODevice interface
 public:
     bool isSequential() const;

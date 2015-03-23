@@ -97,6 +97,7 @@ LIBS += -L$$PWD/../include/libusb-1.0
 CONFIG += staticlib
 
 }
+
 LIBS += -lusb-1.0
 
 
