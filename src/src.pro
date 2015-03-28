@@ -72,7 +72,8 @@ HEADERS += \
     eventhandler.h \
     global.h \
     clibusb.h \
-    bulkdevicehandle.h
+    bulkdevicehandle.h \
+    version.h
 
 PUBLIC_HEADERS = \
     global.h \
@@ -90,7 +91,8 @@ QMAKE_MOC = $$QMAKE_MOC -nw     # Make MOC shut up about non-QObject classes
 
 win32 {
 INCLUDEPATH += $$PWD/../include
-LIBS += -L$$PWD/../include/libusb-1.0
+LIBS += -L$$PWD/../lib
+RC_FILE = qusb.rc
 
 }else{
 
@@ -118,6 +120,9 @@ isEmpty(QUSB_INSTALL_PREFIX) {  # If the user had set this, honor that
 
 headers.files = $${PUBLIC_HEADERS}
 headers.path = $${QUSB_INSTALL_PREFIX}/include/qusb
-target.path = $${QUSB_INSTALL_PREFIX}/lib
+target.path = $${QUSB_INSTALL_PREFIX}/../setup
 
 INSTALLS += headers target
+
+DISTFILES += \
+    qusb.rc

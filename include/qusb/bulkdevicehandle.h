@@ -5,6 +5,7 @@
 #include <QIODevice>
 #include <QBuffer>
 #include <QMutex>
+#include <QSemaphore>
 #include "global.h"
 
 
@@ -92,6 +93,8 @@ private:
     QByteArray currentWrite;
     QMutex writeMutex;
 
+    QSemaphore transferSam;
+    const int transferSamNum = 2;
 };
 
 
