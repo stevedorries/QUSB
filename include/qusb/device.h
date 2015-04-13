@@ -54,7 +54,7 @@ public:
     };
 
 //    friend class DeviceHandle;
-    friend void setDebugLevel(int level);
+//    friend void setDebugLevel(int level);
 
     Device(const Device &d);
     explicit Device(libusb_device *rawdevice);

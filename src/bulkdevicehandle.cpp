@@ -17,7 +17,6 @@ BulkDeviceHandle::BulkDeviceHandle(const Device &device,QObject *parent) :
         throw r;
     }
     QObject::connect(this,&BulkDeviceHandle::readyRead,this,&BulkDeviceHandle::continueRead);
-
 }
 
 BulkDeviceHandle::BulkDeviceHandle(const Device &device, libusb_device_handle *rawhandle, QObject *parent):
@@ -36,13 +35,10 @@ BulkDeviceHandle::~BulkDeviceHandle()
     }
     if(!transferSam.tryAcquire(2,3000)){
         qCritical()<<"transfer resource "<<transferSam.available()<<"; may crash ";
-
     }
-
     foreach (int num, claimedInterfaces)
         libusb_release_interface(rawhandle, num);
     libusb_close(rawhandle);
-
     qDebug()<<"descructed BulkDeviceHandle::~BulkDeviceHandle";
 }
 
@@ -76,7 +72,6 @@ int BulkDeviceHandle::activeConfiguration() const
         break;
     }
     return rc;
-
 }
 
 int BulkDeviceHandle::setConfiguration(int config) const
@@ -112,7 +107,6 @@ int BulkDeviceHandle::claimInterface(int num)
     else
         this->claimedInterfaces.append(num);
     return r;
-
 }
 
 int BulkDeviceHandle::releaseInterface(int num)
@@ -125,7 +119,6 @@ int BulkDeviceHandle::releaseInterface(int num)
         libusb_attach_kernel_driver(this->rawhandle,num);
     }
     return r;
-
 }
 
 int BulkDeviceHandle::setInterfaceAlternateSetting(int interfaceNumber, int alternateSetting) const
@@ -146,7 +139,6 @@ int BulkDeviceHandle::setInterfaceAlternateSetting(int interfaceNumber, int alte
         qWarning("An error has occured");
     }
     return rc;
-
 }
 
 bool BulkDeviceHandle::isInterfaceClaimed(int num)
@@ -157,7 +149,6 @@ bool BulkDeviceHandle::isInterfaceClaimed(int num)
         }
     }
     return false;
-
 }
 
 //libusb_device_handle *BulkDeviceHandle::rawhandle() const
@@ -176,7 +167,6 @@ BulkDeviceHandle *BulkDeviceHandle::fromVendorIdProductId(quint16 vid, quint16 p
     libusb_device *rawdevice = libusb_get_device(rawhandle);
     Device device(rawdevice);
     return new BulkDeviceHandle(device, rawhandle);
-
 }
 
 QString BulkDeviceHandle::stringDescriptor(quint32 index) const
@@ -191,16 +181,15 @@ QString BulkDeviceHandle::stringDescriptor(quint32 index) const
         qWarning("Error getting description");
         return "";
     }
-
     return QString::fromLatin1(buffer, bufferSize);
-
 }
 
 void BulkDeviceHandle::onTransferEvent(libusb_transfer *transfer)
 {
-    //    qDebug()<<"transfer -- status "<<transfer->status<<" ; endpoint "<<transfer->endpoint<<
-    //              " ; type : "<<transfer->type<<" ; actual length  : "<<transfer->actual_length<<
-    //              " flags "<<transfer->flags<< QThread::currentThreadId();;
+    qDebug()<<"transfer -- status "<<transfer->status<<" ; endpoint "<<transfer->endpoint<<
+              " ; type : "<<transfer->type<<" ; actual length  : "<<transfer->actual_length<<
+              " flags "<<transfer->flags<<"\t transfer "<<transfer<<" our read ransfer"<<this->readTransfer <<
+              " deviceID "<<this->getDevice()->rawdevice();
     if (transfer == this->readTransfer)
     {
         switch (transfer->status)
@@ -215,6 +204,7 @@ void BulkDeviceHandle::onTransferEvent(libusb_transfer *transfer)
             emit this->readChannelFinished();
             break;
         case LIBUSB_TRANSFER_COMPLETED:{
+
             this->readMutex.lock();
             if(this->readBytes.atEnd())//everything has been read;the buffer is safe to reset
                 this->readBytes.close();
@@ -248,14 +238,14 @@ void BulkDeviceHandle::onTransferEvent(libusb_transfer *transfer)
         case LIBUSB_TRANSFER_CANCELLED:
             // Transfers are cancelled when they close. Do cleanup for it.
             // See also: IO::close()
-            //            qDebug()<<"stop write by cancelled";
+            qDebug()<<"stop write by cancelled";
             this->stopWrite();
             break;
         case LIBUSB_TRANSFER_COMPLETED:{
             emit this->bytesWritten(transfer->actual_length);
             QMutexLocker mutexLocker(&this->writeMutex);
             if(this->writeBytes.atEnd()){
-                //                qDebug()<<"write all bytes and stop write "<<transferSam.available();
+                //qDebug()<<"write all bytes and stop write "<<transferSam.available();
                 this->stopWrite();
                 return;
             }
@@ -270,7 +260,6 @@ void BulkDeviceHandle::onTransferEvent(libusb_transfer *transfer)
             qWarning("::onTransferEvent---not implement write transfer status %d",transfer->status);
             break;
         }
-
     }
 }
 
@@ -280,7 +269,6 @@ bool BulkDeviceHandle::startRead()
         qWarning()<<"startRead---try acquer transfer res error";
         return false;
     }
-
     this->readTransfer = libusb_alloc_transfer(0);
     libusb_fill_bulk_transfer(
                 readTransfer,
@@ -311,7 +299,6 @@ bool BulkDeviceHandle::stopRead()
     this->readBytes.close();
     qDebug()<<"BulkDeviceHandle::stopReaded";
     return true;
-
 }
 
 bool BulkDeviceHandle::startWrite()
@@ -320,15 +307,11 @@ bool BulkDeviceHandle::startWrite()
         qWarning()<<"startWrite---try acquer transfer res error "<<transferSam.available();
         return false;
     }
-
     this->writeTransfer = libusb_alloc_transfer(0);
     this->currentWrite = this->writeBytes.read(this->maxSendingPacketSize);
-
     while(this->currentWrite.size() < this->maxSendingPacketSize){
         this->currentWrite.append((char )0);
     }
-    //    qDebug()<<"write data "<<currentWrite.toHex();
-
     libusb_fill_bulk_transfer(
                 this->writeTransfer,
                 this->rawhandle,
@@ -343,10 +326,7 @@ bool BulkDeviceHandle::startWrite()
     int r = libusb_submit_transfer(this->writeTransfer);
     if (r)
     {
-        //        this->writeBytes.close();
-        //        libusb_free_transfer(this->writeTransfer);
-        //        this->writeTransfer = 0;
-        //        transferSam.release();
+        qWarning()<<"BulkDeviceHandle::startWrite--submit error "<<r;
         this->stopWrite();
         return false;
     }
@@ -373,7 +353,6 @@ void BulkDeviceHandle::transferCallback(libusb_transfer *transfer)
     }
     BulkDeviceHandle *obj = reinterpret_cast<BulkDeviceHandle *>(transfer->user_data);
     obj->onTransferEvent(transfer);
-
 }
 
 void BulkDeviceHandle::continueRead()
@@ -382,7 +361,6 @@ void BulkDeviceHandle::continueRead()
     if(!this->startRead()){
         emit this->readChannelFinished();
     }
-
 }
 
 bool BulkDeviceHandle::isSequential() const
@@ -392,19 +370,16 @@ bool BulkDeviceHandle::isSequential() const
 
 bool BulkDeviceHandle::open(QIODevice::OpenMode mode)
 {
-
     if(!this->startRead()){
         return false;
     }
     QIODevice::open(mode);
-
     return true;
-
 }
 
 void BulkDeviceHandle::close()
 {
-    qDebug()<<"close device io";
+    qDebug()<<"BulkDeviceHandle::close --- start , deviceID "<<this->getDevice()->rawdevice();;
     if(this->readTransfer){
         if (!this->readTransfer->dev_handle)
         {
@@ -413,9 +388,9 @@ void BulkDeviceHandle::close()
         }else{
             // Needs to cancel the transfer first. Cleanup happens in the
             // callback. (IOPrivate::transferCallback)
+            qDebug()<<"cancel read tranfer start "<<this->readTransfer;
             int r = libusb_cancel_transfer(this->readTransfer);
             qDebug()<<"cancel read tranfer "<<this->readTransfer<<" ret " <<r;
-
         }
     }
 
@@ -425,31 +400,29 @@ void BulkDeviceHandle::close()
             // Nothing to transfer. We can clean up now safely.
             this->stopWrite();
         }else{
+            qDebug()<<"cancel write tranfer start "<<this->readTransfer;
             int r = libusb_cancel_transfer(this->writeTransfer);
             qDebug()<<"cancel write tranfer "<<this->writeTransfer<<" ret " <<r;
         }
     }
     QIODevice::close();
-
+    qDebug()<<"BulkDeviceHandle::close --- end";
 }
 
 qint64 BulkDeviceHandle::bytesAvailable() const
 {
     return QIODevice::bytesAvailable()+this->readBytes.bytesAvailable();
-
 }
 
 qint64 BulkDeviceHandle::bytesToWrite() const
 {
     return  this->writeBytes.bytesAvailable()+ QIODevice::bytesToWrite();
-
 }
 
 qint64 BulkDeviceHandle::readData(char *data, qint64 maxlen)
 {
     QMutexLocker mutexLocker(&this->readMutex);
     return this->readBytes.read(data,maxlen);
-
 }
 
 qint64 BulkDeviceHandle::writeData(const char *data, qint64 len)
@@ -467,11 +440,11 @@ qint64 BulkDeviceHandle::writeData(const char *data, qint64 len)
     this->writeBytes.write(data,len);
     this->writeBytes.seek(readPos);
 
-    if(!this->writeTransfer   && !this->startWrite() ){
+    if(!this->writeTransfer && !this->startWrite()){
+
         return -1;
     }
     return len;
-
 }
 
 }   // namespace QUSB

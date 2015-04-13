@@ -23,7 +23,8 @@ TEMPLATE = subdirs
 
 CONFIG += demo
 
-SUBDIRS = src
+SUBDIRS = src \
+    test
 
 
 CONFIG(demo) {

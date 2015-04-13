@@ -120,7 +120,7 @@ isEmpty(QUSB_INSTALL_PREFIX) {  # If the user had set this, honor that
 
 headers.files = $${PUBLIC_HEADERS}
 headers.path = $${QUSB_INSTALL_PREFIX}/include/qusb
-target.path = $${QUSB_INSTALL_PREFIX}/../setup
+target.path = $${QUSB_INSTALL_PREFIX}/lib
 
 INSTALLS += headers target
 
