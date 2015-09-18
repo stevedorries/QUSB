@@ -21,13 +21,13 @@
 
 TEMPLATE = subdirs
 
-CONFIG += demo
+#CONFIG += demo
 
 SUBDIRS = src \
     test
 
 
-CONFIG(demo) {
-    SUBDIRS += demo
-    demo.depends = src
-}
+#CONFIG(demo) {
+#    SUBDIRS += demo
+#    demo.depends = src
+#}

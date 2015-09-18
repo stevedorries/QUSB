@@ -48,7 +48,7 @@ RCC_DIR = $$BUILD_DIR
 UI_DIR = $$BUILD_DIR
 PRECOMPILED_DIR = $$BUILD_DIR
 
-
+VERSION = 1.0
 #
 # Project settings
 #
@@ -94,15 +94,22 @@ INCLUDEPATH += $$PWD/../include
 LIBS += -L$$PWD/../lib
 RC_FILE = qusb.rc
 
-}else{
+}
+else{
 
 CONFIG += staticlib
 
 }
 
-LIBS += -lusb-1.0
 
 
+#LIBS += -lusb-1.0
+
+linux-arm-gnueabi-g++{
+    QUSB_INSTALL_PREFIX = /home/lht/nfs/arm-linux
+    INCLUDEPATH += /home/lht/nfs/arm-linux/include
+#    CONFIG += staticlib
+}
 #
 # Deploy
 #
@@ -116,6 +123,9 @@ isEmpty(QUSB_INSTALL_PREFIX) {  # If the user had set this, honor that
     win32 {
         QUSB_INSTALL_PREFIX = $$PWD/..
     }
+
+
+
 }
 
 headers.files = $${PUBLIC_HEADERS}

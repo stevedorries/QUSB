@@ -100,6 +100,7 @@ int BulkDeviceHandle::setConfiguration(int config) const
 
 int BulkDeviceHandle::claimInterface(int num)
 {
+    qDebug()<<"claim intreface "<<num;
     libusb_detach_kernel_driver(this->rawhandle,num);
     int r = libusb_claim_interface(this->rawhandle, num);
     if (r)
@@ -186,10 +187,8 @@ QString BulkDeviceHandle::stringDescriptor(quint32 index) const
 
 void BulkDeviceHandle::onTransferEvent(libusb_transfer *transfer)
 {
-    qDebug()<<"transfer -- status "<<transfer->status<<" ; endpoint "<<transfer->endpoint<<
-              " ; type : "<<transfer->type<<" ; actual length  : "<<transfer->actual_length<<
-              " flags "<<transfer->flags<<"\t transfer "<<transfer<<" our read ransfer"<<this->readTransfer <<
-              " deviceID "<<this->getDevice()->rawdevice();
+//    qDebug()<<"transfer -- status "<<transfer->status<<" ; endpoint "<<transfer->endpoint<<" ; type : "<<transfer->type<<" ; actual length  : "<<transfer->actual_length<<" flags "<<transfer->flags<<"\t transfer "<<transfer<<" our read ransfer"<<this->readTransfer <<" deviceID "<<this->getDevice()->rawdevice();
+//    qDebug()<<"onTransferEvent -- status "<<transfer->status;
     if (transfer == this->readTransfer)
     {
         switch (transfer->status)
@@ -204,7 +203,6 @@ void BulkDeviceHandle::onTransferEvent(libusb_transfer *transfer)
             emit this->readChannelFinished();
             break;
         case LIBUSB_TRANSFER_COMPLETED:{
-
             this->readMutex.lock();
             if(this->readBytes.atEnd())//everything has been read;the buffer is safe to reset
                 this->readBytes.close();
@@ -255,11 +253,17 @@ void BulkDeviceHandle::onTransferEvent(libusb_transfer *transfer)
             startWrite();
             break;
         }
+        case LIBUSB_TRANSFER_ERROR:{
+            qWarning("::onTransferEvent--- write transfer error ");
+
+        }
         default:
             // TODO: Implement the rest of the API
             qWarning("::onTransferEvent---not implement write transfer status %d",transfer->status);
             break;
         }
+    }else{
+        qWarning("not exist transfer");
     }
 }
 

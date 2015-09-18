@@ -1,15 +1,29 @@
-TEMPLATE = app
+QT += core
+
+
 CONFIG += console
-CONFIG -= app_bundle
-CONFIG -= qt
 
-SOURCES += main.cc
+TEMPLATE = app
 
 
-LIBS += -lKaerHid
-#include(deployment.pri)
-#qtcAddDeployment()
+TARGET = test
+
+linux-g++{
+
+LIBS += -L$$PWD -lusb-1.0
+
+}
+linux-arm-gnueabi-g++{
+    LIBS += -L$$PWD/arm -lusb-1.0
+}
+
+
+
+SOURCES += main.cc \
+    kaerhid.cc \
+    samvprotocal.cpp
 
 HEADERS += \
-    ../KaerHid/kaerhid.h
+    kaerhid.h \
+    samvprotocal.h
 

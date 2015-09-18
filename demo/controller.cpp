@@ -36,7 +36,7 @@ Controller::Controller(QObject *parent) :
             handle->getDevice()->DeviceDescription();
             handle->setParent(this);
             if(handle->claimInterface(0) == 0){
-                io = new QUSB::BulkIO(handle, 3, this);
+//                io = new QUSB::BulkIO(handle, 3, this);
             }
         }
         else

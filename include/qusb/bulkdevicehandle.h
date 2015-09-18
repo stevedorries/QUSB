@@ -94,7 +94,7 @@ private:
     QMutex writeMutex;
 
     QSemaphore transferSam;
-    const int transferSamNum = 2;
+//    static const int transferSamNum = 2;
 };
 
 

@@ -84,7 +84,7 @@ libusb_context *Device::rawcontext()
                 handler = new EventHandler(context);
                 QThread *thread = new QThread();
                 handler->moveToThread(thread);
-                thread->start();
+                thread->start(QThread::TimeCriticalPriority);
 
                 destroyer = new Destroyer(thread, handler);
                 QObject::connect(
