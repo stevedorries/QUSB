@@ -81,7 +81,7 @@ PUBLIC_HEADERS = \
     clibusb.h \
     bulkdevicehandle.h
 
-QMAKE_MOC = $$QMAKE_MOC -nw     # Make MOC shut up about non-QObject classes
+#QMAKE_MOC = $$QMAKE_MOC -nw     # Make MOC shut up about non-QObject classes
 
 ## TODO: Make this distributable
 #!isEmpty(!$(QUSB_LIBUSB_PREFIX)) {

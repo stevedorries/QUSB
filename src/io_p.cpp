@@ -230,7 +230,11 @@ libusb_transfer *IOPrivate::alloc()
 
 void IOPrivate::fill(libusb_transfer *tran, int flag, uchar *buf, int len)
 {
-
+    //TODO: IOPrivate::fill
+    Q_UNUSED(tran);
+    Q_UNUSED(flag);
+    Q_UNUSED(buf);
+    Q_UNUSED(len);
 }
 
 
