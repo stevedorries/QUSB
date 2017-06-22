@@ -22,12 +22,17 @@
 TEMPLATE = subdirs
 
 #CONFIG += demo
+#CONFIG += test
 
-SUBDIRS = src \
-    test
+SUBDIRS = src
 
 
-#CONFIG(demo) {
-#    SUBDIRS += demo
-#    demo.depends = src
+CONFIG(demo) {
+    SUBDIRS += demo
+    demo.depends = src
+}
+
+#CONFIG(test) {
+#    SUBDIRS += test
+#    test.depends = src
 #}
