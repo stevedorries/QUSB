@@ -65,13 +65,15 @@ public:
 
     DeviceHandle *handle;
     libusb_transfer *readTransfer;
-    libusb_transfer *writeTransfer;
+    QByteArray readBuffer;
     int endpointIn;
     int endpointOut;
     int maxSendingPacketSize;
+    libusb_transfer *writeTransfer;
+
     int maxReceivingPacketSize;
 
-    QByteArray readBuffer;
+
     QBuffer readBytes;
     QMutex readMutex;
 

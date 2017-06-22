@@ -74,18 +74,21 @@ protected:
 
 
 private:
-    libusb_device_handle *rawhandle;
-    Device device;
-    QList<int> claimedInterfaces;
-
     libusb_transfer *readTransfer;
-    libusb_transfer *writeTransfer;
+    QByteArray readBuffer;
     int endpointIn;
     int endpointOut;
     int maxSendingPacketSize;
+    libusb_transfer *writeTransfer;
+    Device device;
+    libusb_device_handle *rawhandle;
+    QSemaphore transferSam;
+
+    QList<int> claimedInterfaces;
+
     int maxReceivingPacketSize;
 
-    QByteArray readBuffer;
+
     QBuffer readBytes;
     QMutex readMutex;
 
@@ -93,7 +96,6 @@ private:
     QByteArray currentWrite;
     QMutex writeMutex;
 
-    QSemaphore transferSam;
 //    static const int transferSamNum = 2;
 };
 

@@ -38,6 +38,7 @@ QUSB_SHARED_EXPORT void  setDebugLevel(int level);
 
 class QUSB_SHARED_EXPORT Device : public QObject
 {
+    Q_OBJECT
     Q_DECLARE_PRIVATE(Device)
 
 public:
@@ -56,8 +57,8 @@ public:
 //    friend class DeviceHandle;
 //    friend void setDebugLevel(int level);
 
-    Device(const Device &d);
-    explicit Device(libusb_device *rawdevice);
+    Device(const Device &d, QObject *parent = 0);
+    explicit Device(libusb_device *rawdevice, QObject *parent = 0);
 
     ~Device();
 

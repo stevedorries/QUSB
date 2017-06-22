@@ -55,8 +55,8 @@ DevicePrivate::~DevicePrivate()
 }
 
 
-Device::Device(libusb_device *rd) :
-    d_ptr(new DevicePrivate(this, rd))
+Device::Device(libusb_device *rd, QObject *parent) :
+   QObject(parent), d_ptr(new DevicePrivate(this, rd))
 {
 }
 
@@ -98,8 +98,8 @@ libusb_context *Device::rawcontext()
     return context;
 }
 
-Device::Device(const Device &d) :
-    d_ptr(new DevicePrivate(this, d.rawdevice()))
+Device::Device(const Device &d, QObject *parent) :
+   QObject(parent), d_ptr(new DevicePrivate(this, d.rawdevice()))
 {
 }
 
