@@ -35,7 +35,7 @@ UI_DIR = $$BUILD_DIR
 PRECOMPILED_DIR = $$BUILD_DIR
 
 INCLUDEPATH += ../src
-LIBS += -L../lib -lqusb -lusb-1.0
+LIBS += -L../src -L../lib -lqusb -lusb-1.0
 
 
 SOURCES += main.cpp \
