@@ -9,8 +9,10 @@ Controller::Controller(QObject *parent) :
     QObject(parent), handle(0), io(0), count(0)
 {
     this->startTimer(10000);
-    const quint16 vendor = 0x0483;
-    const quint16 product = 0x5750;
+    //const quint16 vendor = 0x0483;
+    //const quint16 product = 0x5750;
+    const quint16 vendor = 0x16c0;
+    const quint16 product = 0x05dc;
 
     QUSB::setDebugLevel(3);
     QList<QUSB::Device> devices = QUSB::Device::availableDevices();
@@ -18,7 +20,8 @@ Controller::Controller(QObject *parent) :
     {
         qDebug()<<"Got device at:"<<device.bus()<<":"<<device.address();
         qDebug()<<"Device info:";
-        qDebug()<<"\t vid "<<device.vendorId()<<"\tProduct ID"<<device.productId();
+        qDebug()<<"\t vid 0x"<<QString::number( device.vendorId(), 16 )
+                <<"\tProduct ID 0x"<<QString::number(device.productId(), 16);
 
         if(device.vendorId() != vendor || device.productId() != product){
                 continue;
