@@ -14,12 +14,16 @@ public:
     virtual ~Controller();
 
 public slots:
-    void processBytes(const QByteArray &bytes);
-
+    void processBytes();
+    void writtenBytes(qint64 bytes);
 private:
-    QUSB::Handle *handle;
+    QUSB::DeviceHandle *handle;
     QUSB::BulkIO *io;
     int count;
+
+    // QObject interface
+protected:
+    void timerEvent(QTimerEvent *);
 };
 
 #endif // CONTROLLER_H

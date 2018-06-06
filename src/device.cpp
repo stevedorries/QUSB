@@ -1,7 +1,28 @@
+/******************************************************************************
+**
+** Copyright (C) 2014 BIMEtek Co. Ltd.
+**
+** This file is part of QUSB.
+**
+** QUSB is free software: you can redistribute it and/or modify it under the
+** terms of the GNU Lesser General Public License as published by the Free
+** Software Foundation, either version 3 of the License, or (at your option)
+** any later version.
+**
+** QUSB is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+** FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+** details.
+**
+** You should have received a copy of the GNU General Public License along with
+** this file. If not, see <http://www.gnu.org/licenses/>.
+**
+******************************************************************************/
+
 #include <QtCore/QCoreApplication>
 #include <QtCore/QMutex>
 #include <QtCore/QThread>
-#include "clibusb"
+#include "clibusb.h"
 #include "device.h"
 #include "eventhandler.h"
 #include "handle.h"
@@ -34,8 +55,8 @@ DevicePrivate::~DevicePrivate()
 }
 
 
-Device::Device(libusb_device *rd) :
-    d_ptr(new DevicePrivate(this, rd))
+Device::Device(libusb_device *rd, QObject *parent) :
+   QObject(parent), d_ptr(new DevicePrivate(this, rd))
 {
 }
 
@@ -63,7 +84,7 @@ libusb_context *Device::rawcontext()
                 handler = new EventHandler(context);
                 QThread *thread = new QThread();
                 handler->moveToThread(thread);
-                thread->start();
+                thread->start(QThread::TimeCriticalPriority);
 
                 destroyer = new Destroyer(thread, handler);
                 QObject::connect(
@@ -77,8 +98,8 @@ libusb_context *Device::rawcontext()
     return context;
 }
 
-Device::Device(const Device &d) :
-    d_ptr(new DevicePrivate(this, d.rawdevice()))
+Device::Device(const Device &d, QObject *parent) :
+   QObject(parent), d_ptr(new DevicePrivate(this, d.rawdevice()))
 {
 }
 
@@ -86,6 +107,7 @@ Device::~Device()
 {
     delete d_ptr;
 }
+
 
 quint8 Device::bus() const
 {
@@ -156,7 +178,7 @@ qint16 Device::product() const
     int r = libusb_get_device_descriptor(d_ptr->rawdevice, &desc);
     if (r)
         return -1;
-    return desc.iProduct;    
+    return desc.iProduct;
 }
 
 qint16 Device::manufacturer() const
@@ -195,10 +217,48 @@ qint16 Device::deviceSubClass() const
     return desc.bDeviceSubClass;
 }
 
+void Device::DeviceDescription()
+{
+    Q_D(Device);
+    libusb_device_descriptor desc;
+    int r = libusb_get_device_descriptor(d->rawdevice, &desc);
+    if (r)
+        return ;
+    qDebug("dev config num %d",desc.bNumConfigurations);
+    struct libusb_config_descriptor *config;
+    r = libusb_get_active_config_descriptor(d->rawdevice,&config);
+    if(r){
+        return ;
+    }
+    qDebug("dev config interface number %d",config->bNumInterfaces);
+    for(int i = 0;i<config->bNumInterfaces;i++){
+        const struct libusb_interface * inter = &config->interface[i];
+        qDebug("number of alternate settings : %d",inter->num_altsetting);
+        for(int j = 0;j<inter->num_altsetting;j++){
+            const struct libusb_interface_descriptor * interdesc = &inter->altsetting[j];
+            qDebug("interface number %d;endpoint number %d;interface class %d",
+                   interdesc->bInterfaceNumber,interdesc->bNumEndpoints,interdesc->bInterfaceClass);
+            for(int k=0;k<interdesc->bNumEndpoints;k++){
+                const struct libusb_endpoint_descriptor * epdesc = &interdesc->endpoint[k];
+                qDebug("descriptor type :%d;ep addr %d;attributes %d;max packet size %d",
+                       epdesc->bDescriptorType,epdesc->bEndpointAddress,
+                       epdesc->bmAttributes,epdesc->wMaxPacketSize);
+            }
+        }
+    }
+    libusb_free_config_descriptor(config);
+}
+
 Device &Device::operator=(const Device &d)
 {
     this->d_ptr->rawdevice = d.d_ptr->rawdevice;
     return *this;
+}
+
+bool Device::operator ==(const Device &d)
+{
+    return     (this->rawdevice() == d.rawdevice());
+
 }
 
 QList<Device> Device::availableDevices()

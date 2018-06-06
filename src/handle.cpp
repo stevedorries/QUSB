@@ -1,30 +1,55 @@
-#include "clibusb"
+/******************************************************************************
+**
+** Copyright (C) 2014 BIMEtek Co. Ltd.
+**
+** This file is part of QUSB.
+**
+** QUSB is free software: you can redistribute it and/or modify it under the
+** terms of the GNU Lesser General Public License as published by the Free
+** Software Foundation, either version 3 of the License, or (at your option)
+** any later version.
+**
+** QUSB is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+** FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+** details.
+**
+** You should have received a copy of the GNU General Public License along with
+** this file. If not, see <http://www.gnu.org/licenses/>.
+**
+******************************************************************************/
+
+#include "clibusb.h"
 #include "device.h"
 #include "handle.h"
+#include <QDebug>
 
 namespace QUSB
 {
 
-class HandlePrivate
+class DeviceHandlePrivate
 {
-    Q_DECLARE_PUBLIC(Handle)
-    Handle *q_ptr;
+    Q_DECLARE_PUBLIC(DeviceHandle)
+    DeviceHandle *q_ptr;
 
 public:
-    HandlePrivate(
-            Handle *q, const Device &device, libusb_device_handle *rawhandle);
-    virtual ~HandlePrivate();
+    DeviceHandlePrivate(
+            DeviceHandle *q, const Device &device, libusb_device_handle *rawhandle);
+    virtual ~DeviceHandlePrivate();
 
     libusb_device_handle *rawhandle;
     Device device;
     QList<int> claimedInterfaces;
 };
 
-HandlePrivate::HandlePrivate(
-        Handle *q, const Device &device, libusb_device_handle *rawhandle) :
-    q_ptr(q), rawhandle(rawhandle), device(device) {}
+DeviceHandlePrivate::DeviceHandlePrivate(
+        DeviceHandle *q, const Device &device, libusb_device_handle *rawhandle) :
+    q_ptr(q), rawhandle(rawhandle), device(device) {
 
-HandlePrivate::~HandlePrivate()
+
+}
+
+DeviceHandlePrivate::~DeviceHandlePrivate()
 {
     foreach (int num, claimedInterfaces)
         libusb_release_interface(rawhandle, num);
@@ -32,33 +57,43 @@ HandlePrivate::~HandlePrivate()
 }
 
 
-Handle::Handle(const Device &device, libusb_device_handle *rawhandle,
+DeviceHandle::DeviceHandle(const Device &device, libusb_device_handle *rawhandle,
         QObject *parent) :
-    QObject(parent), d_ptr(new HandlePrivate(this, device, rawhandle))
+    QObject(parent), d_ptr(new DeviceHandlePrivate(this, device, rawhandle))
 {
 }
 
-libusb_device_handle *Handle::rawhandle() const
+libusb_device_handle *DeviceHandle::rawhandle() const
 {
     return d_func()->rawhandle;
 }
 
-Handle::Handle(const Device &device, QObject *parent) :
-    QObject(parent), d_ptr(new HandlePrivate(this, device, 0))
+DeviceHandle::DeviceHandle(const Device &device, QObject *parent) :
+    QObject(parent), d_ptr(new DeviceHandlePrivate(this, device, 0))
 {
-    Q_D(Handle);
+    Q_D(DeviceHandle);
     int r = libusb_open(device.rawdevice(), &d->rawhandle);
-    if (r)
-        qWarning("Unable to obtain device handle.");
+    if (r){
+        delete d_ptr;
+        qWarning()<<"Unable to obtain device handle "<<r;
+        throw r;
+    }
 
 }
 
-Handle::~Handle()
+DeviceHandle::~DeviceHandle()
 {
+    qDebug("DeviceHandle::~DeviceHandle");
     delete d_ptr;
 }
 
-int Handle::activeConfiguration() const
+Device *DeviceHandle::getDevice()
+{
+    Q_D(DeviceHandle);
+    return &d->device;
+}
+
+int DeviceHandle::activeConfiguration() const
 {
     int rc = 0;
     int config = 0;
@@ -85,7 +120,7 @@ int Handle::activeConfiguration() const
     return rc;
 }
 
-int Handle::setConfiguration(int config) const
+int DeviceHandle::setConfiguration(int config) const
 {
     int rc = 0;
     rc = libusb_set_configuration(d_ptr->rawhandle, config);
@@ -109,31 +144,51 @@ int Handle::setConfiguration(int config) const
     return rc;
 }
 
-
-int Handle::claimInterface(int num)
+bool DeviceHandle::InterfaceClaimed(int num)
 {
+    Q_D(DeviceHandle);
+
+    foreach (int n, d->claimedInterfaces) {
+        if(num == n) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+int DeviceHandle::claimInterface(int num)
+{
+    Q_D(DeviceHandle);
+    libusb_detach_kernel_driver(d->rawhandle,num);
     int r = libusb_claim_interface(d_ptr->rawhandle, num);
     if (r)
-        qWarning("Failed to claim interface %d", num);
+        qWarning("Failed to claim interface %d,error code %d", num,r);
     else
         d_ptr->claimedInterfaces.append(num);
     return r;
 }
 
-int Handle::releaseInterface(int num)
+int DeviceHandle::releaseInterface(int num)
 {
-    Q_D(Handle);
+    Q_D(DeviceHandle);
     int r = libusb_release_interface(d->rawhandle, num);
     if (r)
         qWarning("Failed to release interface %d", num);
-    else
+    else{
         d->claimedInterfaces.removeOne(num);
+
+        libusb_attach_kernel_driver(d->rawhandle,num);
+    }
     return r;
 }
 
-int Handle::setInterfaceAlternateSetting(int interfaceNumber, int alternateSetting) const
+int DeviceHandle::setInterfaceAlternateSetting(
+        int interfaceNumber, int alternateSetting) const
 {
-    int rc = libusb_set_interface_alt_setting(d_ptr->rawhandle, interfaceNumber, alternateSetting);
+    int rc = libusb_set_interface_alt_setting(
+                d_ptr->rawhandle, interfaceNumber, alternateSetting);
     switch(rc)
     {
     case 0://success
@@ -150,19 +205,20 @@ int Handle::setInterfaceAlternateSetting(int interfaceNumber, int alternateSetti
     return rc;
 }
 
-Handle *Handle::fromVendorIdProductId(quint16 vid, quint16 pid)
+DeviceHandle *DeviceHandle::fromVendorIdProductId(quint16 vid, quint16 pid)
 {
     libusb_device_handle *rawhandle = libusb_open_device_with_vid_pid(
         Device::rawcontext(), vid, pid
     );
-    if (!rawhandle)
+    if (!rawhandle){
         return 0;
+    }
     libusb_device *rawdevice = libusb_get_device(rawhandle);
     Device device(rawdevice);
-    return new Handle(device, rawhandle);
+    return new DeviceHandle(device, rawhandle);
 }
 
-QString Handle::stringDescriptor(quint32 index) const
+QString DeviceHandle::stringDescriptor(quint32 index) const
 {
     const int bufferSize = 256;
     char buffer[bufferSize];
@@ -171,7 +227,8 @@ QString Handle::stringDescriptor(quint32 index) const
                 bufferSize);
     if (r < 0)  // TODO: Need to do something with the error code.
         qWarning("Error getting description");
-    return QString::fromAscii(buffer, bufferSize);
+    //return QString::fromLatin1(buffer, bufferSize);
+    return QString::fromLatin1(buffer, r);
 }
 
 }   // namespace QUSB

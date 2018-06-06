@@ -1,4 +1,25 @@
-#include "clibusb"
+/******************************************************************************
+**
+** Copyright (C) 2014 BIMEtek Co. Ltd.
+**
+** This file is part of QUSB.
+**
+** QUSB is free software: you can redistribute it and/or modify it under the
+** terms of the GNU Lesser General Public License as published by the Free
+** Software Foundation, either version 3 of the License, or (at your option)
+** any later version.
+**
+** QUSB is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+** FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+** details.
+**
+** You should have received a copy of the GNU General Public License along with
+** this file. If not, see <http://www.gnu.org/licenses/>.
+**
+******************************************************************************/
+
+#include "clibusb.h"
 #include "bulkio.h"
 #include "handle.h"
 #include "io_p.h"
@@ -11,15 +32,17 @@ class BulkIOPrivate : public IOPrivate
     Q_DECLARE_PUBLIC(BulkIO)
 
 public:
-    BulkIOPrivate(IO *q, Handle *handle, int endpoint) :
-        IOPrivate(q, handle, endpoint) {}
+    BulkIOPrivate(IO *q, DeviceHandle *handle) :
+        IOPrivate(q, handle) {
+
+    }
 
     virtual void fill(libusb_transfer *tran, int flag, uchar *buf, int len)
     {
         libusb_fill_bulk_transfer(
             tran,
             this->handle->rawhandle(),
-            flag | this->endpoint,
+            flag ,
             buf,
             len,
             IOPrivate::transferCallback,
@@ -27,6 +50,7 @@ public:
             0
         );
     }
+
 };
 
 BulkIO::BulkIO(BulkIOPrivate *d, QObject *parent) :
@@ -34,9 +58,12 @@ BulkIO::BulkIO(BulkIOPrivate *d, QObject *parent) :
 {
 }
 
-BulkIO::BulkIO(Handle *handle, int endpoint, QObject *parent) :
-    IO(new BulkIOPrivate(this, handle, endpoint), parent)
+BulkIO::BulkIO(DeviceHandle *handle, QObject *parent) :
+    IO(new BulkIOPrivate(this, handle), parent)
 {
+    Q_D(BulkIO);
+//    d->interfaceNumber = interface_number;
+
 }
 
 }   // namespace QUSB

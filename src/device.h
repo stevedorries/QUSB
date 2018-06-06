@@ -1,3 +1,24 @@
+/******************************************************************************
+**
+** Copyright (C) 2014 BIMEtek Co. Ltd.
+**
+** This file is part of QUSB.
+**
+** QUSB is free software: you can redistribute it and/or modify it under the
+** terms of the GNU Lesser General Public License as published by the Free
+** Software Foundation, either version 3 of the License, or (at your option)
+** any later version.
+**
+** QUSB is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+** FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+** details.
+**
+** You should have received a copy of the GNU General Public License along with
+** this file. If not, see <http://www.gnu.org/licenses/>.
+**
+******************************************************************************/
+
 #ifndef QUSB_DEVICE_H
 #define QUSB_DEVICE_H
 
@@ -10,20 +31,15 @@ struct libusb_device;
 namespace QUSB
 {
 
-class Handle;
+class DeviceHandle;
 class DevicePrivate;
 
-void setDebugLevel(int level);
+QUSB_SHARED_EXPORT void  setDebugLevel(int level);
 
 class QUSB_SHARED_EXPORT Device : public QObject
 {
+    Q_OBJECT
     Q_DECLARE_PRIVATE(Device)
-    DevicePrivate *d_ptr;
-
-    explicit Device(libusb_device *rawdevice);
-
-    libusb_device *rawdevice() const;
-    static libusb_context *rawcontext();
 
 public:
 
@@ -38,11 +54,16 @@ public:
         SpeedSuper
     };
 
-    friend class Handle;
-    friend void setDebugLevel(int level);
+//    friend class DeviceHandle;
+//    friend void setDebugLevel(int level);
 
-    Device(const Device &d);
+    Device(const Device &d, QObject *parent = 0);
+    explicit Device(libusb_device *rawdevice, QObject *parent = 0);
+
     ~Device();
+
+    libusb_device *rawdevice() const;
+    static libusb_context *rawcontext();
 
     quint8 bus() const;
     quint8 address() const;
@@ -57,9 +78,15 @@ public:
     qint16 deviceClass() const;
     qint16 deviceSubClass() const;
 
+    void DeviceDescription();
     Device &operator=(const Device &d);
+    bool operator ==(const Device &d);
 
     static QList<Device> availableDevices();
+
+private:
+    DevicePrivate *d_ptr;
+
 };
 
 }   // namespace QUSB
